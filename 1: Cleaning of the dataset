@@ -1,0 +1,25 @@
+# -------------------------------------------------------------------------------- NOTEBOOK-CELL: CODE
+# -*- coding: utf-8 -*-
+import dataiku
+import pandas as pd, numpy as np
+from dataiku import pandasutils as pdu
+
+# Read recipe inputs
+trei_Input = dataiku.Dataset("TREI_Input")
+df = trei_Input.get_dataframe(infer_with_pandas=False)
+
+#Subset dataset
+df = df[df["SCT-ESA2010"].isin(["S.125", "S.126"]) ] #S125/S126
+df = df[~df["INSTR_ASSET"].isin(["F31_r", "F32_r", "F511_r", "F522_r"]) ] #Geen Omdraaiposten
+
+# CHange variables as numeric
+df["ObservationValue"] = df["ObservationValue"].astype(int)
+df["CorrectionValue"] = df["CorrectionValue"].astype(int)
+df["TotalValue"] = df["TotalValue"].astype(int)
+
+# Member 'NA' of variable AREA_CPTY is regarded by python as a missing value , therefore the member is shown as empty. THis line restores the true value by change the empty values back to 'NA'
+df['AREA_CPTY'].fillna('NA',inplace = True)
+
+# Write recipe outputs
+trei_Cleaned = dataiku.Dataset("TREI_Cleaned")
+trei_Cleaned.write_with_schema(df)
