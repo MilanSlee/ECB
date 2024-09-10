@@ -1,0 +1,29 @@
+# -------------------------------------------------------------------------------- NOTEBOOK-CELL: CODE
+# -*- coding: utf-8 -*-
+import dataiku
+import pandas as pd, numpy as np
+from dataiku import pandasutils as pdu
+
+# Read recipe inputs
+TREI_Cleaned= dataiku.Dataset("TREI_Cleaned")
+df = TREI_Cleaned.get_dataframe()
+
+# Create index columns
+Columns = ['SCT-ESA2010', 'SUBSCT-ESA2010', 'BED-TAK-NACE', 'ACCOUNT_ENTRY',
+                                  'INSTR_ASSET', 'PROF-LOSS-ITM', 'AREA_CPTY', 'SECT_CPTY', 'Rowpart', 'ORG-MAT',
+                                  'REL_CPTY', 'MetricName', 'PeriodicityName', 'DENOM-CURR', 'CNTR_UCI',
+                                  'REM-MAT', 'SECT_SELLER', 'SECURITISED', 'AREA_SELLER', 'SEC-TYPE', 'SEC-AARD', 'Period']
+
+# Pivot the df
+df = df.pivot_table(index=Columns, columns=["REC-COL"], values="TotalValue", aggfunc="sum").reset_index() # pivot de DataFrame en Reset de index (this makes the indexcolumns visible)
+
+# Unpivot the df. By pivotting and unpivotting the df, you create additional rows with empty values
+df = df.melt(id_vars=Columns, var_name="REC-COL", value_name="TotalValue")
+
+# Fill empty values with zeros and change TotalValue to integer
+df["TotalValue"].fillna(0, inplace=True)
+df["TotalValue"] = df["TotalValue"].astype(int)
+
+# Write recipe outputs
+TREI_Complete = dataiku.Dataset("TREI_Complete")
+TREI_Complete.write_with_schema(df)
