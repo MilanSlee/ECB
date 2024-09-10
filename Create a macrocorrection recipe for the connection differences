@@ -1,0 +1,40 @@
+# -------------------------------------------------------------------------------- NOTEBOOK-CELL: CODE
+# -*- coding: utf-8 -*-
+import dataiku
+import pandas as pd, numpy as np
+from dataiku import pandasutils as pdu
+
+# Read recipe inputs
+AV_Draaitabel = dataiku.Dataset("AV_Draaitabel")
+df = AV_Draaitabel.get_dataframe()
+
+# Keep rows with 'Aansluitverschillen' (differences between the lagged balance at the end of the period and the balance at the start of the period)
+df = df[(df["Aansluitverschillen"] != 0)]
+
+# Create additional variables for the macrocorrection recipe
+#av_Recept_df["VolgNummer"] = av_Recept_df.index + 1
+df["VolgNummer"] = 1
+df["Source"] = "MA-C"
+df["Type"] = "A"
+df["Reason"] = "Aansluitverschillencorrectie"
+df["Commentaar"] = "Aansluitverschillen wegwerken"
+df.rename(columns={'Aansluitverschillen':'ValueNumeric'}, inplace=True)
+df["ValueString"] = ""
+df["ValueFilter"] = ""
+df["Rek relatie"] = np.where(df["Rowpart"]=='I', "RecMESI", "RecMESR")
+df["### Dimensies ###"] = "### Dimensies ###"
+df["[S]REC-COL"] = np.where(df["Rowpart"]=='I', "C-PR", "INT-PR")
+df["PeriodicityName"] = "Per kwartaal"
+
+# Keep the neccesary variables for the macrocorrection recipe
+print(list(df.columns.values)) #Toon alle variabelen uit df in notebook
+df = df[['VolgNummer', 'Source', 'Type', 'Reason', 'Commentaar', 'Periode', 'ValueNumeric',
+                             'ValueString', 'ValueFilter', 'Rek relatie', '### Dimensies ###', 'MetricName',
+                             'SCT-ESA2010', 'SUBSCT-ESA2010', 'BED-TAK-NACE', 'ACCOUNT_ENTRY', 'INSTR_ASSET',
+                             'PROF-LOSS-ITM', 'AREA_CPTY', 'REC-COL', '[S]REC-COL', 'SECT_CPTY', 'Rowpart',
+                             'ORG-MAT', 'REL_CPTY', 'PeriodicityName', 'DENOM-CURR',
+                             'CNTR_UCI', 'REM-MAT', 'SECT_SELLER', 'SECURITISED', 'AREA_SELLER', 'SEC-TYPE', 'SEC-AARD' ]]
+
+# Write recipe outputs
+av_Recept = dataiku.Dataset("AV_Recept")
+av_Recept.write_with_schema(df)
