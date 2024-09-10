@@ -27,7 +27,7 @@ df['P-E-Lag'] = df.groupby([
     'SEC-TYPE', 'SEC-AARD'
 ])['P-E'].shift(1)
 
-# Calculate the 'Connection_diffences' between the lagged balance at the end of the period and the balance at the start of the period
+# Calculate the 'Aansluitverschillen' (or AV), which is Dutch for the differences between the lagged balance at the end of the period and the balance at the start of the period
 df["P-B"].fillna(0, inplace=True) # Replace NAs with zeros
 df["Aansluitverschillen"] = df["P-E-Lag"] - df["P-B"]
 df["Aansluitverschillen"].fillna(0, inplace=True) # Replace NAs with zeros
@@ -35,5 +35,5 @@ df["Aansluitverschillen"] = (df["Aansluitverschillen"]).astype(int)
 df["REC-COL"] = "P-B" # Create a new variable REC-COL, that we can use to merge to the next dataframe
 
 # Write recipe outputs
-TREI_Inclusief_Lege_Regels = dataiku.Dataset("AV_Draaitabel")
-TREI_Inclusief_Lege_Regels.write_with_schema(df)
+AV_Draaitabel = dataiku.Dataset("AV_Draaitabel")
+AV_Draaitabel.write_with_schema(df)
