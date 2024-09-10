@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+import dataiku
+import pandas as pd, numpy as np
+from dataiku import pandasutils as pdu
+
+# Read recipe inputs
+TREI_Inclusief_Lege_Regels_volledig = dataiku.Dataset("TREI_Inclusief_Lege_Regels_volledig")
+df = TREI_Inclusief_Lege_Regels_volledig.get_dataframe()
+
+# Subset the balance at the beginning and end of the period
+df = df[df["REC-COL"].isin(["P-B", "P-E"]) ]
+
+# Create index columns
+Columns = ['SCT-ESA2010', 'SUBSCT-ESA2010', 'BED-TAK-NACE', 'ACCOUNT_ENTRY',
+                                  'INSTR_ASSET', 'PROF-LOSS-ITM', 'AREA_CPTY', 'SECT_CPTY', 'Rowpart', 'ORG-MAT',
+                                  'REL_CPTY', 'MetricName', 'PeriodicityName', 'DENOM-CURR', 'CNTR_UCI',
+                                  'REM-MAT', 'SECT_SELLER', 'SECURITISED', 'AREA_SELLER', 'SEC-TYPE', 'SEC-AARD', 'Period']
+
+# Pivot the df
+df = df.pivot_table(index=Columns, columns=["REC-COL"], values="TotalValue", aggfunc="sum").reset_index() # pivot de DataFrame en Reset de index (zodat de indexkolommen zichtbaar zijn)
+
+# Create lagged variable for the balance at the end of the period
+df['P-E-Lag'] = df.groupby([
+    'SCT-ESA2010', 'SUBSCT-ESA2010', 'BED-TAK-NACE', 'ACCOUNT_ENTRY', 'INSTR_ASSET', 
+    'PROF-LOSS-ITM', 'AREA_CPTY', 'SECT_CPTY', 'Rowpart', 'ORG-MAT', 'REL_CPTY', 
+    'DENOM-CURR', 'CNTR_UCI', 'REM-MAT', 'SECT_SELLER', 'SECURITISED', 'AREA_SELLER', 
+    'SEC-TYPE', 'SEC-AARD'
+])['P-E'].shift(1)
+
+# Calculate the 'Connection_diffences' between the lagged balance at the end of the period and the balance at the start of the period
+df["P-B"].fillna(0, inplace=True) # Replace NAs with zeros
+df["Aansluitverschillen"] = df["P-E-Lag"] - df["P-B"]
+df["Aansluitverschillen"].fillna(0, inplace=True) # Replace NAs with zeros
+df["Aansluitverschillen"] = (df["Aansluitverschillen"]).astype(int)
+df["REC-COL"] = "P-B" # Create a new variable REC-COL, that we can use to merge to the next dataframe
+
+# Write recipe outputs
+TREI_Inclusief_Lege_Regels = dataiku.Dataset("AV_Draaitabel")
+TREI_Inclusief_Lege_Regels.write_with_schema(df)
