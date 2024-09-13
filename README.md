@@ -1,6 +1,6 @@
 Welcome to the repository regarding the job application of Milan Slee for the rol of Economist-Statisticians (ESCB/IO) - Monetary and Economic Statistics at the ECB.
 
-The information in this repository is intended solely for the addressee. If you receive access to this repository as a non-addressee, please inform me immediately at my emailadress (Milan2_slee@hotmail.com). Use of the information by unauthorized persons, disclosure, or reproduction is prohibited and may lead to liability.
+The information in this repository is intended solely for the addressee. If you receive access to this repository as a non-addressee, please inform me immediately at my emailadress (Milan2_slee@hotmail.com).
 
 The repository contains part of the compilation of the Dutch macroeconomic statistics for the Other financial intermediaries, except insurance corporations and pension funds (ESA Sector S.125) and Financial auxiliaries (ESA Sector S.126). The compilation is primarily build in Python in the Dataiku environnment. The reporting framework requires financial institutions to upload their balance sheets quarterly. The balance at the beginning of the period should match the balance at the end of the previous reporting period. However, it is possible to report a discrepancy between the balance at the end of the previous reporting period and the balance at the currenct reporting period.
 
